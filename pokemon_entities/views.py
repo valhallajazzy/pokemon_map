@@ -3,7 +3,8 @@ import json
 
 from django.http import HttpResponseNotFound
 from django.shortcuts import render
-from .models import PokemonEntity
+from django.utils.timezone import localtime
+from .models import Pokemon, PokemonEntity
 
 MOSCOW_CENTER = [55.751244, 37.618423]
 DEFAULT_IMAGE_URL = (
@@ -27,10 +28,7 @@ def add_pokemon(folium_map, lat, lon, image_url=DEFAULT_IMAGE_URL):
 
 
 def show_all_pokemons(request):
-    # with open('pokemon_entities/pokemons.json', encoding='utf-8') as database:
-    #     pokemons = json.load(database)['pokemons']
-    pokemons = PokemonEntity.objects.all()
-
+    pokemons = PokemonEntity.objects.filter(appeared_at__lte=localtime(), disappeared_at__gte=localtime())
     folium_map = folium.Map(location=MOSCOW_CENTER, zoom_start=12)
     for pokemon in pokemons:
             add_pokemon(
@@ -55,24 +53,42 @@ def show_all_pokemons(request):
 
 
 def show_pokemon(request, pokemon_id):
-    with open('pokemon_entities/pokemons.json', encoding='utf-8') as database:
-        pokemons = json.load(database)['pokemons']
-
-    for pokemon in pokemons:
-        if pokemon['pokemon_id'] == int(pokemon_id):
-            requested_pokemon = pokemon
-            break
+    request_pokemons = PokemonEntity.objects.filter(pokemon=pokemon_id)
+    if request_pokemons.exists():
+        pokemon1 = {
+            "pokemon_id": request_pokemons.first().pokemon.id,
+            "title_ru": request_pokemons.first().pokemon.title,
+            # "title_en": ,
+            # "title_jp": ,
+            # "description": ,
+            "img_url": request.build_absolute_uri(request_pokemons.first().pokemon.image.url),
+            "entities": [
+                {
+                    "level": 15,
+                    "lat": 55.753244,
+                    "lon": 37.628423
+                },
+                {
+                    "level": 24,
+                    "lat": 55.743244,
+                    "lon": 37.635423
+                }
+            ],
+            # "next_evolution": {
+            #     "title_ru": "Ивизавр",
+            #     "pokemon_id": 2,
+            #     "img_url": "https://vignette.wikia.nocookie.net/pokemon/images/7/73/002Ivysaur.png/revision/latest/scale-to-width-down/200?cb=20150703180624&path-prefix=ru"
+            # }
+        }
     else:
         return HttpResponseNotFound('<h1>Такой покемон не найден</h1>')
-
     folium_map = folium.Map(location=MOSCOW_CENTER, zoom_start=12)
-    for pokemon_entity in requested_pokemon['entities']:
+    for pokemon in request_pokemons:
         add_pokemon(
-            folium_map, pokemon_entity['lat'],
-            pokemon_entity['lon'],
-            pokemon['img_url']
+            folium_map, pokemon.latitude,
+            pokemon.longitude,
+            request.build_absolute_uri(pokemon.pokemon.image.url)
         )
-
     return render(request, 'pokemon.html', context={
-        'map': folium_map._repr_html_(), 'pokemon': pokemon
+        'map': folium_map._repr_html_(), 'pokemon': pokemon1
     })
