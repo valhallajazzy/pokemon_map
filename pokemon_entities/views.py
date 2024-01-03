@@ -4,7 +4,7 @@ import json
 from django.http import HttpResponseNotFound
 from django.shortcuts import render
 from django.utils.timezone import localtime
-from .models import Pokemon, PokemonEntity
+from .models import PokemonEntity
 
 MOSCOW_CENTER = [55.751244, 37.618423]
 DEFAULT_IMAGE_URL = (
@@ -53,47 +53,40 @@ def show_all_pokemons(request):
 
 
 def show_pokemon(request, pokemon_id):
-    request_pokemons = PokemonEntity.objects.filter(pokemon=pokemon_id)
-    if request_pokemons.exists():
-        pokemon1 = {
-            "pokemon_id": request_pokemons.first().pokemon.id,
-            "title_ru": request_pokemons.first().pokemon.title,
-            "title_en": request_pokemons.first().pokemon.title_en,
-            "title_jp": request_pokemons.first().pokemon.title_jp,
-            "description": request_pokemons.first().pokemon.description,
-            "img_url": request.build_absolute_uri(request_pokemons.first().pokemon.image.url),
-            "entities": [
-                {
-                    "level": 15,
-                    "lat": 55.753244,
-                    "lon": 37.628423
-                },
-                {
-                    "level": 24,
-                    "lat": 55.743244,
-                    "lon": 37.635423
-                }
-            ],
-            # "next_evolution": {
-            #     "title_ru": "Ивизавр",
-            #     "pokemon_id": 2,
-            #     "img_url": "https://vignette.wikia.nocookie.net/pokemon/images/7/73/002Ivysaur.png/revision/latest/scale-to-width-down/200?cb=20150703180624&path-prefix=ru"
-            # },
-            "previous_evolution": {
-                "title_ru": request_pokemons.first().pokemon.previous_evolution.title,
-                "pokemon_id": request_pokemons.first().pokemon.previous_evolution.id,
-                "img_url": request.build_absolute_uri(request_pokemons.first().pokemon.previous_evolution.image.url)
-            }
+    pokemons_for_map = PokemonEntity.objects.filter(pokemon=pokemon_id)
+    if pokemons_for_map.exists():
+        pokemon = pokemons_for_map.first().pokemon
+        previous_evolution_pokemon = pokemon.previous_evolution
+        next_evolution_pokemon = pokemon.evolution.last()
+        pokemon_info = {
+            "pokemon_id": pokemon.id,
+            "title_ru": pokemon.title,
+            "title_en": pokemon.title_en,
+            "title_jp": pokemon.title_jp,
+            "description": pokemon.description,
+            "img_url": request.build_absolute_uri(pokemon.image.url),
         }
+        if previous_evolution_pokemon:
+            pokemon_info["previous_evolution"] = {
+                "title_ru": previous_evolution_pokemon.title,
+                "pokemon_id": previous_evolution_pokemon.id,
+                "img_url": request.build_absolute_uri(previous_evolution_pokemon.image.url)
+            }
+        if next_evolution_pokemon:
+            pokemon_info["next_evolution"] = {
+                "title_ru": next_evolution_pokemon.title,
+                "pokemon_id": next_evolution_pokemon.id,
+                "img_url": request.build_absolute_uri(next_evolution_pokemon.image.url)
+            }
     else:
         return HttpResponseNotFound('<h1>Такой покемон не найден</h1>')
     folium_map = folium.Map(location=MOSCOW_CENTER, zoom_start=12)
-    for pokemon in request_pokemons:
+    for pokemon in pokemons_for_map:
         add_pokemon(
             folium_map, pokemon.latitude,
             pokemon.longitude,
             request.build_absolute_uri(pokemon.pokemon.image.url)
         )
     return render(request, 'pokemon.html', context={
-        'map': folium_map._repr_html_(), 'pokemon': pokemon1
+        'map': folium_map._repr_html_(), 'pokemon': pokemon_info
     })
