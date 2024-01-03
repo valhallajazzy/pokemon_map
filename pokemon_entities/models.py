@@ -3,7 +3,7 @@ from django.db import models  # noqa F401
 
 class Pokemon(models.Model):
     title = models.CharField(max_length=200, verbose_name='Вид')
-    image = models.ImageField(null=True, blank=True, upload_to='pokemons_images')
+    image = models.ImageField(null=True, blank=True, upload_to='pokemons_images', verbose_name='Картинка')
     description = models.TextField(verbose_name='Описание')
     title_en = models.CharField(max_length=200, verbose_name='Вид на английском')
     title_jp = models.CharField(max_length=200, verbose_name='Вид на японском')
@@ -17,7 +17,7 @@ class Pokemon(models.Model):
 class PokemonEntity(models.Model):
     latitude = models.FloatField(verbose_name='Широта')
     longitude = models.FloatField(verbose_name='Долгота')
-    pokemon = models.ForeignKey(Pokemon, on_delete=models.CASCADE)
+    pokemon = models.ForeignKey(Pokemon, on_delete=models.CASCADE, verbose_name='Вид')
     appeared_at = models.DateTimeField(blank=True, null=True, verbose_name='Появляется')
     disappeared_at = models.DateTimeField(blank=True, null=True, verbose_name='Исчезает')
     level = models.IntegerField(null=True, blank=True, verbose_name='Уровень')
