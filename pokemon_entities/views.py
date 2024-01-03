@@ -78,7 +78,12 @@ def show_pokemon(request, pokemon_id):
             #     "title_ru": "Ивизавр",
             #     "pokemon_id": 2,
             #     "img_url": "https://vignette.wikia.nocookie.net/pokemon/images/7/73/002Ivysaur.png/revision/latest/scale-to-width-down/200?cb=20150703180624&path-prefix=ru"
-            # }
+            # },
+            "previous_evolution": {
+                "title_ru": request_pokemons.first().pokemon.previous_evolution.title,
+                "pokemon_id": request_pokemons.first().pokemon.previous_evolution.id,
+                "img_url": request.build_absolute_uri(request_pokemons.first().pokemon.previous_evolution.image.url)
+            }
         }
     else:
         return HttpResponseNotFound('<h1>Такой покемон не найден</h1>')

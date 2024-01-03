@@ -8,6 +8,8 @@ class Pokemon(models.Model):
     description = models.TextField(verbose_name='Описание')
     title_en = models.CharField(max_length=200)
     title_jp = models.CharField(max_length=200)
+    previous_evolution = models.ForeignKey("self", null=True, blank=True, on_delete=models.SET_NULL,
+                                           verbose_name='Из кого эволюционирует')
 
     def __str__(self):
         return self.title
