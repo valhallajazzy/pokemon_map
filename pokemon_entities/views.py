@@ -58,8 +58,8 @@ def show_pokemon(request, pokemon_id):
         pokemon1 = {
             "pokemon_id": request_pokemons.first().pokemon.id,
             "title_ru": request_pokemons.first().pokemon.title,
-            # "title_en": ,
-            # "title_jp": ,
+            "title_en": request_pokemons.first().pokemon.title_en,
+            "title_jp": request_pokemons.first().pokemon.title_jp,
             "description": request_pokemons.first().pokemon.description,
             "img_url": request.build_absolute_uri(request_pokemons.first().pokemon.image.url),
             "entities": [

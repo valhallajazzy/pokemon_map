@@ -6,6 +6,8 @@ class Pokemon(models.Model):
     title = models.CharField(max_length=200)
     image = models.ImageField(null=True, blank=True, upload_to='pokemons_images')
     description = models.TextField(verbose_name='Описание')
+    title_en = models.CharField(max_length=200)
+    title_jp = models.CharField(max_length=200)
 
     def __str__(self):
         return self.title
