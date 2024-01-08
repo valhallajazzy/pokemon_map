@@ -17,7 +17,7 @@ class Pokemon(models.Model):
 class PokemonEntity(models.Model):
     latitude = models.FloatField(verbose_name='Широта')
     longitude = models.FloatField(verbose_name='Долгота')
-    pokemon = models.ForeignKey(Pokemon, related_name='pokemons_on_map', on_delete=models.CASCADE, verbose_name='Вид')
+    pokemon = models.ForeignKey(Pokemon, related_name='enitities', on_delete=models.CASCADE, verbose_name='Вид')
     appeared_at = models.DateTimeField(blank=True, null=True, verbose_name='Появляется')
     disappeared_at = models.DateTimeField(blank=True, null=True, verbose_name='Исчезает')
     level = models.IntegerField(null=True, blank=True, verbose_name='Уровень')
